@@ -1,0 +1,40 @@
+#include <stdio.h>
+
+int main()
+{
+    int opcion,id_origen,id_destino,hora,tiempo_m;
+
+    do
+    {
+        printf( "Bienvenido\n");
+        printf( "1. Ingresar origen\n");
+        printf( "2. Ingresar destino\n");
+        printf( "3. Ingresar hora\n" );
+        printf( "4. Buscar tiempo de viaje medio\n");
+        printf( "5. Salir.\n");
+
+        scanf( "%d", &opcion );
+
+        /* Inicio del anidamiento */
+
+        switch ( opcion )
+        {
+            case 1: printf( "Ingrese id origen: \n");
+                    scanf( "%d", &id_origen );
+                    break;
+            case 2: printf( "Ingrese id destino: \n");
+                    scanf( "%d", &id_destino );
+                    break;
+            case 3: printf( "Ingrese hora: \n");
+                    scanf( "%d", &hora );
+                    break;
+            case 4: printf( "El tiempo medio es de: %d.\n", tiempo_m);
+                    break;
+         }
+
+         /* Fin del anidamiento */
+
+    } while ( opcion != 5 );
+
+    return 0;
+}
