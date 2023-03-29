@@ -19,16 +19,16 @@ int main()
 
         switch ( opcion )
         {
-            case 1: printf( "Ingrese id origen: \n");
+            case 1: printf( "Ingrese ID origen: \n");
                     scanf( "%d", &id_origen );
                     break;
-            case 2: printf( "Ingrese id destino: \n");
+            case 2: printf( "Ingrese ID destino: \n");
                     scanf( "%d", &id_destino );
                     break;
-            case 3: printf( "Ingrese hora: \n");
+            case 3: printf( "Ingrese hora del día: \n");
                     scanf( "%d", &hora );
                     break;
-            case 4: printf( "El tiempo medio es de: %d.\n", tiempo_m);
+            case 4: printf( "Tiempo de viaje medio: %d.\n", tiempo_m);
                     break;
          }
 
