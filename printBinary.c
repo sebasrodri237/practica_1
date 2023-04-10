@@ -3,8 +3,7 @@
 
 int main(){
     
-    int buff[8];
-
+    int count = 0;
     struct travel{
     /*Posiciones de la estructura para ir recorriendo datos y guardarlos con una posicion*/
     int actualPosition,nextPosition;
@@ -16,19 +15,20 @@ int main(){
     e inicializamos la posicion de inicio*/
     struct travel travelModel;
     
-        FILE *ptr_myfile;
+        FILE *fDataBin;
 
-		ptr_myfile=fopen("dataBinario.bin","rb");
-		if (!ptr_myfile)
+		fDataBin=fopen("dataBinario.bin","rb");
+		if (!fDataBin)
 		{
-			printf("Unable to open file!");
+			printf("No se pudo abrir el archivo binario");
 			return 1;
 		}
 
-        while (fread(&travelModel, sizeof(travelModel), 1, ptr_myfile) == 1) {
-            printf("%hd,%hd,%hd,%f\n",travelModel.sourceId,travelModel.destinyId,travelModel.hour,travelModel.meanTravel);
+        while (fread(&travelModel, sizeof(travelModel), 1, fDataBin) == 1 && count != 100) {
+            printf("%hd,%hd\n",travelModel.sourceId,travelModel.destinyId);
+            count = count + 1;
         }
-
+        fclose(fDataBin);
         return (0);
 }
         
