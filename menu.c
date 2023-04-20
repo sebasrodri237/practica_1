@@ -1,8 +1,39 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <string.h>
+
+/* En este punto se debe realizar la comunicacion con la busqueda. Sea con tuberias o con memoria compartida */
+typedef struct {
+    short int sourceId,destinyId,hour;
+    float meanTravel;
+    } travel;
 
 int main()
 {
-    int opcion,id_origen,id_destino,hora,tiempo_m;
+    key_t key = 1234;
+    int shm_id;
+    travel *shm_ptr;
+
+    // Crea la memoria compartida
+    shm_id = shmget(key, 1024, IPC_CREAT | 0666);
+    if (shm_id == -1) {
+        perror("Error en shmget");
+        exit(1);
+    }
+
+    // Vincula la memoria compartida a una estructura de datos
+    shm_ptr = (travel*) shmat(shm_id, NULL, 0);
+    if (shm_ptr == (travel*) -1) {
+        perror("Error en shmat");
+        exit(1);
+    }
+
+    travel datos;
+    
+    int opcion;
 
     do
     {
@@ -20,21 +51,30 @@ int main()
         switch ( opcion )
         {
             case 1: printf( "Ingrese ID origen (1-1160): \n");
-                    scanf( "%d", &id_origen );
+                    scanf( "%d", &datos.sourceId );
+                    memcpy(shm_ptr, &datos, sizeof(travel));
                     break;
             case 2: printf( "Ingrese ID destino (1-1160): \n");
-                    scanf( "%d", &id_destino );
+                    scanf( "%d", &datos.destinyId );
+                    memcpy(shm_ptr, &datos, sizeof(travel));
                     break;
             case 3: printf( "Ingrese hora del día (0-23): \n");
-                    scanf( "%d", &hora );
+                    scanf( "%d", &datos.hour );
+                    memcpy(shm_ptr, &datos, sizeof(travel));
                     break;
-            case 4: printf( "Tiempo de viaje medio: %d.\n", tiempo_m);
+            case 4: printf( "Tiempo de viaje medio: %2f.\n", shm_ptr->meanTravel);
                     break;
          }
 
          /* Fin del anidamiento */
 
     } while ( opcion != 5 );
+
+    // Desvincula la memoria compartida
+    shmdt(shm_ptr);
+
+    // Elimina la memoria compartida
+    shmctl(shm_id, IPC_RMID, NULL);
 
     return 0;
 }
