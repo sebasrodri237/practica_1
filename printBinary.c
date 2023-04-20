@@ -1,24 +1,45 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <string.h>
 
 
 int main(){
     
-    struct travel{
-        /*Posiciones de la estructura para ir recorriendo datos y guardarlos con una posicion*/
+    typedef struct {
         short int sourceId,destinyId,hour,siguiente;
         double meanTravel;
-    };
+    } travel;
 
+    key_t key = 1234;
+    int shm_id;
+    travel *shm_ptr;
+
+    // Crea la memoria compartida
+    shm_id = shmget(key, 1024, IPC_CREAT | 0666);
+    if (shm_id == -1) {
+        perror("Error en shmget");
+        exit(1);
+    }
+
+    // Vincula la memoria compartida a una estructura de datos
+    shm_ptr = (travel*) shmat(shm_id, NULL, 0);
+    if (shm_ptr == (travel*) -1) {
+        perror("Error en shmat");
+        exit(1);
+    }
     /*Declaracion de una estrucura para guardar los datos en esta e ir agregandolo a la table
     e inicializamos la posicion de inicio*/
-    struct travel travelModel;
+    travel travelModel;
     short int sId, dId, h;
 
-    
-        printf("Introduzca un numero entero: ");
-        scanf("%hd %hd %hd", &sId, &dId, &h);
+        sId = shm_ptr->sourceId;
+        dId = shm_ptr->destinyId;
+        h = shm_ptr->hour;
 
+        printf("Dato memoria\n: %hd, %hd, %hd\n", sId,dId,h);
         FILE *fDataBin;
 
 		fDataBin=fopen("a.bin","rb");
@@ -37,7 +58,8 @@ int main(){
         {   
             if(sId == travelModel.sourceId){
                 if(dId == travelModel.destinyId && h == travelModel.hour){
-                    printf("El tiempo de viaje promedio es: %.2f\n",travelModel.meanTravel);
+                    shm_ptr->meanTravel = travelModel.meanTravel;
+                    printf("Tiempo medio: %.2f",shm_ptr->meanTravel);
                     break;
                 }
                 else{
@@ -63,4 +85,4 @@ int main(){
         fclose(fDataBin);
         return (0);
 }
-        
+          
