@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-
+#include <stdlib.h>
 struct travel{
     /*Posiciones de la estructura para ir recorriendo datos y guardarlos con una posicion*/
     short int sourceId,destinyId,hour,siguiente;
@@ -31,11 +31,17 @@ int main() {
     
     short int origen, destino, hora, siguiente = 0;
     double tiempo_medio;
-    char linea[100]; // Suponemos que cada línea tiene una longitud máxima de 100 caracteres
+    int size = 100;
+    char *linea; // Suponemos que cada línea tiene una longitud máxima de 100 caracteres
+    linea = (char*) malloc(size * sizeof(char));
+    if (linea == NULL) {
+        printf("No se pudo asignar la memoria\n");
+        return 1;
+    }
     struct travel travelModel;
     FILE *input_file = fopen("dataLimpio.csv", "r");
-    FILE *output_file = fopen("a.bin", "wb");
-    for(int i=1;i<=1000000;i++){
+    FILE *output_file = fopen("b.bin", "wb");
+    for(int i=1;i<=100;i++){
         int dataRow = fscanf(input_file,"%hd,%hd,%hd,%lf,%*s",&travelModel.sourceId,&travelModel.destinyId,&travelModel.hour,&travelModel.meanTravel);
         printf("Dato: %i, %hd, %hd, %hd, %.2f\n",i,travelModel.sourceId,travelModel.destinyId,travelModel.hour,travelModel.meanTravel);
         if(dataRow==EOF){
@@ -45,7 +51,7 @@ int main() {
         travelModel.siguiente = buscarSiguiente(i,travelModel.sourceId);
         fwrite(&travelModel,sizeof(struct travel),1,output_file);
     }
-
+    free(linea);
     fclose(input_file);
     fclose(output_file);
 

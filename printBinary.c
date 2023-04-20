@@ -36,7 +36,7 @@ int main(){
 
         FILE *fDataBin;
 
-		fDataBin=fopen("a.bin","rb");
+		fDataBin=fopen("b.bin","rb");
 		if (!fDataBin)
 		{
 			printf("No se pudo abrir el archivo binario\n");
