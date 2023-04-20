@@ -5,6 +5,7 @@
 #include <sys/shm.h>
 #include <string.h>
 
+
 int main(){
     
     typedef struct {
@@ -42,6 +43,7 @@ int main(){
 			printf("No se pudo abrir el archivo binario\n");
 			return 1;
 		}
+        
 
         // Esperar siempre el cambio de un dato en memoria compartida
         while (1) {
@@ -51,6 +53,7 @@ int main(){
                 short int sId = shm_ptr->sourceId;
                 short int dId = shm_ptr->destinyId;
                 short int h = shm_ptr->hour;
+                printf("Dato memoria: %hd, %hd, %hd\n", sId,dId,h);
                 fseek(fDataBin, 0, SEEK_SET);
                 fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
@@ -61,10 +64,11 @@ int main(){
                     if(sId == travelModel.sourceId){
                         if(dId == travelModel.destinyId && h == travelModel.hour){
                             shm_ptr->meanTravel = travelModel.meanTravel;
+                            printf("Tiempo medio: %.2f\n",shm_ptr->meanTravel);
+                            sleep(1);
                             break;
                         }
                         else{
-                            shm_ptr->meanTravel = 0;
                             fseek(fDataBin, (travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
                             fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
                             fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
@@ -84,9 +88,10 @@ int main(){
                 }
             // printf("La línea 5 es: %hd, %hd, %hd, %hd, %.2f\n", sourceId, destinyId, hour, siguiente,meanTravel);
             }
-        oldSource = shm_ptr->sourceId;
-        oldDestiny = shm_ptr->destinyId;
-        oldHour = shm_ptr->hour;
+            oldSource = shm_ptr->sourceId;
+            oldDestiny = shm_ptr->destinyId;
+            oldHour = shm_ptr->hour;
+            sleep(1);
         }
     fclose(fDataBin);
     return (0);

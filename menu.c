@@ -7,7 +7,7 @@
 
 /* En este punto se debe realizar la comunicacion con la busqueda. Sea con tuberias o con memoria compartida */
 typedef struct {
-    short int sourceId,destinyId,hour;
+    short int sourceId,destinyId,hour,siguiente;
     double meanTravel;
     } travel;
 
@@ -33,10 +33,9 @@ int main()
 
     travel datos;
     
-    short int opcion;
+    int opcion;
 
-    do
-    {
+    while(opcion!=5){
         printf( "Bienvenido\n");
         printf( "1. Ingresar origen\n");
         printf( "2. Ingresar destino\n");
@@ -44,7 +43,7 @@ int main()
         printf( "4. Buscar tiempo de viaje medio\n");
         printf( "5. Salir.\n");
 
-        scanf( "%hd", &opcion );
+        scanf( "%d", &opcion );
 
         /* Inicio del anidamiento */
 
@@ -59,7 +58,7 @@ int main()
                     memcpy(shm_ptr, &datos, sizeof(travel));
                     break;
             case 3: printf( "Ingrese hora del día (0-23): \n");
-                    scanf( "%hd", &datos.hour );
+                    scanf( "%hd", &datos.hour);
                     memcpy(shm_ptr, &datos, sizeof(travel));
                     break;
             case 4: printf( "Tiempo de viaje medio: %2f.\n", shm_ptr->meanTravel);
@@ -68,7 +67,7 @@ int main()
 
          /* Fin del anidamiento */
 
-    } while ( opcion != 5 );
+    }
 
     // Desvincula la memoria compartida
     shmdt(shm_ptr);
