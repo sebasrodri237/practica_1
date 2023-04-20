@@ -37,7 +37,7 @@ int main(){
 
         FILE *fDataBin;
 
-		fDataBin=fopen("a.bin","rb");
+		fDataBin=fopen("tablaEstructuras.bin","rb");
 		if (!fDataBin)
 		{
 			printf("No se pudo abrir el archivo binario\n");
@@ -60,7 +60,7 @@ int main(){
                 fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
-                for (int i = 1; i <=100; i++){
+                for (int i = 1; i <=250000; i++){
                     if(sId == travelModel.sourceId){
                         if(dId == travelModel.destinyId && h == travelModel.hour){
                             shm_ptr->meanTravel = travelModel.meanTravel;
