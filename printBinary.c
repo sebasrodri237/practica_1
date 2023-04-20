@@ -36,13 +36,12 @@ int main(){
 
         FILE *fDataBin;
 
-		fDataBin=fopen("b.bin","rb");
+		fDataBin=fopen("a.bin","rb");
 		if (!fDataBin)
 		{
 			printf("No se pudo abrir el archivo binario\n");
 			return 1;
 		}
-        
 
         // Esperar siempre el cambio de un dato en memoria compartida
         while (1) {
@@ -86,6 +85,8 @@ int main(){
             // printf("La línea 5 es: %hd, %hd, %hd, %hd, %.2f\n", sourceId, destinyId, hour, siguiente,meanTravel);
             }
         oldSource = shm_ptr->sourceId;
+        oldDestiny = shm_ptr->destinyId;
+        oldHour = shm_ptr->hour;
         }
     fclose(fDataBin);
     return (0);
