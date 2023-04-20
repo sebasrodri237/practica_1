@@ -5,7 +5,6 @@
 #include <sys/shm.h>
 #include <string.h>
 
-
 int main(){
     
     typedef struct {
@@ -33,13 +32,8 @@ int main(){
     /*Declaracion de una estrucura para guardar los datos en esta e ir agregandolo a la table
     e inicializamos la posicion de inicio*/
     travel travelModel;
-    short int sId, dId, h;
+    short int oldSource = -1,oldDestiny = -1,oldHour = -1;
 
-        sId = shm_ptr->sourceId;
-        dId = shm_ptr->destinyId;
-        h = shm_ptr->hour;
-
-        printf("Dato memoria\n: %hd, %hd, %hd\n", sId,dId,h);
         FILE *fDataBin;
 
 		fDataBin=fopen("a.bin","rb");
@@ -48,41 +42,52 @@ int main(){
 			printf("No se pudo abrir el archivo binario\n");
 			return 1;
 		}
-        fseek(fDataBin, 0, SEEK_SET);
-        fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
-        fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
-        fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
-        fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
-        fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
-        for (int i = 1; i <=100; i++)
-        {   
-            if(sId == travelModel.sourceId){
-                if(dId == travelModel.destinyId && h == travelModel.hour){
-                    shm_ptr->meanTravel = travelModel.meanTravel;
-                    printf("Tiempo medio: %.2f",shm_ptr->meanTravel);
-                    break;
-                }
-                else{
-                    fseek(fDataBin, (travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
-                    fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
-                    fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
-                    fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
-                    fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
-                    fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
-                }                
-            }
-            else{
-                fseek(fDataBin, i*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
+        
+
+        // Esperar siempre el cambio de un dato en memoria compartida
+        while (1) {
+            
+            if ((shm_ptr->sourceId != oldSource) || (shm_ptr->destinyId != oldDestiny) || (shm_ptr->hour != oldHour)) {
+                
+                short int sId = shm_ptr->sourceId;
+                short int dId = shm_ptr->destinyId;
+                short int h = shm_ptr->hour;
+                fseek(fDataBin, 0, SEEK_SET);
                 fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
                 fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+                for (int i = 1; i <=100; i++){
+                    if(sId == travelModel.sourceId){
+                        if(dId == travelModel.destinyId && h == travelModel.hour){
+                            shm_ptr->meanTravel = travelModel.meanTravel;
+                            break;
+                        }
+                        else{
+                            shm_ptr->meanTravel = 0;
+                            fseek(fDataBin, (travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
+                            fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
+                            fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
+                            fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
+                            fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
+                            fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+                        }                
+                    }
+                    else{
+                        fseek(fDataBin, i*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
+                        fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
+                        fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
+                        fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
+                        fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
+                        fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+                    }
+                }
+            // printf("La línea 5 es: %hd, %hd, %hd, %hd, %.2f\n", sourceId, destinyId, hour, siguiente,meanTravel);
             }
+        oldSource = shm_ptr->sourceId;
         }
-        // printf("La línea 5 es: %hd, %hd, %hd, %hd, %.2f\n", sourceId, destinyId, hour, siguiente,meanTravel);
-
-        fclose(fDataBin);
-        return (0);
+    fclose(fDataBin);
+    return (0);
 }
           
