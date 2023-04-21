@@ -12,19 +12,19 @@ typedef struct {
     } travel;
 
 int main()
-{
+{   //Llave/clave memoria compartida
     key_t key = 1234;
-    int shm_id;
-    travel *shm_ptr;
+    int shm_id;//identificador de la memoria compartida
+    travel *shm_ptr;// apuntador a la memoria compartida
 
-    // Crea la memoria compartida
+    // Crea la memoria compartida, con la llave, un tamaño y los permisos, luego se asigna al identificador
     shm_id = shmget(key, 1024, IPC_CREAT | 0666);
     if (shm_id == -1) {
         perror("Error en shmget");
         exit(1);
     }
 
-    // Vincula la memoria compartida a una estructura de datos
+    // Vincula la memoria compartida a la estructura de datos
     shm_ptr = (travel*) shmat(shm_id, NULL, 0);
     if (shm_ptr == (travel*) -1) {
         perror("Error en shmat");
@@ -34,7 +34,7 @@ int main()
     travel datos;
     
     int opcion;
-
+    //Menu principal
     while(opcion!=5){
         printf( "Bienvenido\n");
         printf( "1. Ingresar origen\n");
