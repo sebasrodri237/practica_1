@@ -44,7 +44,7 @@ int main() {
     FILE *input_file = fopen("dataLimpio.csv", "r");
     FILE *output_file = fopen("b.bin", "wb");
     //Ciclo para leer lineas del archivo, en este caso, lee 1000, para leer mas simplemente cambiar la condición
-    for(int i=1;i<=1000;i++){
+    for(int i=1;i<=10000;i++){
         int dataRow = fscanf(input_file,"%hd,%hd,%hd,%lf,%*s",&travelModel.sourceId,&travelModel.destinyId,&travelModel.hour,&travelModel.meanTravel);
         printf("Dato: %i, %hd, %hd, %hd, %.2f\n",i,travelModel.sourceId,travelModel.destinyId,travelModel.hour,travelModel.meanTravel);
         if(dataRow==EOF){
