@@ -1,7 +1,7 @@
 #Trabaja con el numero de datos en el archivo, la ultima vez que se probo se dejo en 250000 datos
 scriptBuscar:
-	gcc printBinary.c -o printBinary
-	./printBinary
+	gcc buscarViaje.c -o buscarViaje
+	./buscarViaje
 scriptMenu:
 	gcc menu.c -o menu
 	./menu
