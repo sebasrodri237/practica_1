@@ -1,5 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <string.h>
 struct travel{
     /*Posiciones de la estructura para ir recorriendo datos y guardarlos con una posicion*/
     short int sourceId,destinyId,hour,siguiente;
@@ -11,17 +15,21 @@ short int buscarSiguiente(int posCurrent,int sourceId){
     short int or,des,h,siguiente = 0;
     double tm;
     int flag = 0;
-    for(int i=posCurrent;i<=1000000;i++){
+    for(int i=1;i<=1000000;i++){
         int dataRow = fscanf(p,"%hd,%hd,%hd,%le,%*s",&or,&des,&h,&tm);
         if(dataRow==EOF){
             fclose(p);
             return 0;
         }
-        if(sourceId == or){
-            siguiente = i;
-            fclose(p);
-            return siguiente;
+        if(i > posCurrent){
+            if(sourceId == or){
+                // printf("datos iguales e indice: %hd,%hd,%i\n",sourceId,or,i);
+                siguiente = i;
+                fclose(p);
+                return siguiente;
+            }
         }
+        
     }
     fclose(p);
     return 0;
@@ -42,19 +50,23 @@ int main() {
     struct travel travelModel;
     //Apertura archivo para leer y archivo binario a escribir
     FILE *input_file = fopen("dataLimpio.csv", "r");
-    FILE *output_file = fopen("b.bin", "wb");
+    FILE *output_file = fopen("tablaBinarita.bin", "wb");
     //Ciclo para leer lineas del archivo, en este caso, lee 1000, para leer mas simplemente cambiar la condición
-    for(int i=1;i<=1000;i++){
+    for(int i=1;i<=50000;i++){
+        printf("hola");
         int dataRow = fscanf(input_file,"%hd,%hd,%hd,%lf,%*s",&travelModel.sourceId,&travelModel.destinyId,&travelModel.hour,&travelModel.meanTravel);
-        printf("Dato: %i, %hd, %hd, %hd, %.2f\n",i,travelModel.sourceId,travelModel.destinyId,travelModel.hour,travelModel.meanTravel);
+        // printf("Dato: %i, %hd, %hd, %hd, %.2f\n",i,travelModel.sourceId,travelModel.destinyId,travelModel.hour,travelModel.meanTravel);
         if(dataRow==EOF){
             printf("Lectura finalizada y datos guardados\n");
             break;
         }
         //Buscar el siguiente igual a el origen Id encontrado y enlazarlo
         travelModel.siguiente = buscarSiguiente(i,travelModel.sourceId);
+        // printf("Siguiente es: %hd\n",travelModel.siguiente);
         //Escribir el dato en el archivo binario
         fwrite(&travelModel,sizeof(struct travel),1,output_file);
+        // printf("Dato es: %i,,%hd, %hd, %hd, %hd, %.2f\n",i,travelModel.sourceId, travelModel.destinyId, travelModel.hour, travelModel.siguiente,travelModel.meanTravel);
+        // printf("////////////////////////////////////////////\n");
     }
     //Liberar memoria
     free(linea);
