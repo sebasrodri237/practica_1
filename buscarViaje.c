@@ -54,7 +54,7 @@ int main(){
                 foundValue = 0;
             }
         //Buscar un cambio en la memoria compartida
-            printf("Dato memoria: %hd, %hd, %hd\n", shm_ptr->sourceId,shm_ptr->destinyId,shm_ptr->hour);
+            //printf("Dato memoria: %hd, %hd, %hd\n", shm_ptr->sourceId,shm_ptr->destinyId,shm_ptr->hour);
             //sleep(1);
             //Lectura con apuntadores del archivo binario y guardarlos en la estructura
             fseek(fDataBin, 0, SEEK_SET);
