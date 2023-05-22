@@ -2,41 +2,164 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
-#include <string.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <strings.h>
+#include <string.h>
+#include <time.h>
 
+#define PORT 3535
+#define BACKLOG 32
 
 int main(){
-    //Estrucutra para leer los datos del archivo binario
+
+    int serverfd, clientfd, r, opt = 1;
+    struct sockaddr_in server, client; 
+    socklen_t   tamano;
+    char buffer[4];
+    char bufferAVT[14];
+    char buff[1];
+    unsigned char buf[sizeof(struct in_addr)];
+    char str[INET_ADDRSTRLEN];
+
+    //Estructura para leer los datos del archivo binario
     typedef struct {
         short int sourceId,destinyId,hour,siguiente;
         double meanTravel;
     } travel;
     
-    //Llave/clave memoria compartida
-    key_t key = 1234;
-    int shm_id;//identificador de la memoria compartida
-    travel *shm_ptr;// apuntador a la memoria compartida
+    //Estructura para manejar la busqueda
+    travel travelModel;
 
-    // Crea la memoria compartida, con la llave, un tamaño y los permisos, luego se asigna al identificador
-    shm_id = shmget(key, 1024, IPC_CREAT | 0666);
-    if (shm_id == -1) {
-        perror("Error en shmget");
-        exit(1);
+    //Estructura para guardar los datos recibidos
+    travel travelModelShare;
+
+    // Obtener el tiempo actual
+    time_t t = time(NULL);
+    struct tm tiempoLocal = *localtime(&t);
+
+    // Preparacion para dar formato para la fecha y hora
+    char fechaHora[70];
+    char *formato = "%Y-%m-%d %H:%M:%S";
+    char actTime[70];
+
+    // Formatear la fecha
+    int bytesEscritos = strftime(fechaHora, sizeof(fechaHora), formato, &tiempoLocal);
+
+    // Verificar que se pudo dar formato
+    if (bytesEscritos != 0) {
+        //printf("[%s]", fechaHora);
+        memcpy(actTime, fechaHora, sizeof(fechaHora));
+        // actTime = fechaHora;
+
+    } else {
+        printf("Error formateando fecha");
     }
 
-    // Vincula la memoria compartida a una estructura de datos
-    shm_ptr = (travel*) shmat(shm_id, NULL, 0);
-    if (shm_ptr == (travel*) -1) {
-        perror("Error en shmat");
-        exit(1);
+    // Crear el Log
+    FILE *log;
+    
+    char cadena[200];
+    const char *aux;
+
+    // Creacion y comprobacion socket server
+    serverfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(serverfd < 0){
+        perror("Error en socket(): \n");
+        exit(-1);
     }
+
+    // Configuracion socket
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = INADDR_ANY;
+    bzero(server.sin_zero, 8);
+    
+    setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(int));
+
+    // Creacion y comporbacion bind
+    r = bind(serverfd, (struct sockaddr*)&server, sizeof(struct sockaddr));
+    if(r < 0){
+        perror("Error en bind(): \n");
+        exit(-1);
+    }
+
+    // Creacion y comporbacion listen
+    r = listen(serverfd, BACKLOG);
+    if(r < 0){
+        perror("Error en listen(): \n");
+        exit(-1);
+    }
+
+    // Creacion y comporbacion accept
+    clientfd = accept(serverfd, (struct sockaddr *)&client, &tamano);
+    if(clientfd < 0){
+        perror("Error en accept(): \n");
+        exit(-1);
+    }
+    // Abri el archivo Log.txt
+    log = fopen("Log.txt", "w");
+    if (log == NULL)
+    {
+        printf("Error al crear el log \n");
+    }
+    
+    // Creacion y comporbacion send
+    r = send(clientfd, "Conexion establecida con el servidor", 36, 0);
+    if(r < 0){
+        perror("Error en send(): \n");
+        exit(-1);
+    }
+
+    
+    // Creacion y comprobacion recive
+    r = recv(clientfd, &buffer, 4, 0);
+    buffer[r] = 0;
+    travelModelShare.sourceId = (short)atoi(&buffer[0]);
+
+    // Creacion y comprobacion send
+    r = send(clientfd, "Dato recibido", 14, 0);
+    if(r < 0){
+        perror("Error en send(): \n");
+        exit(-1);
+    }
+
+    // printf("[%s]", fechaHora);
+    // printf("%s La cadenas es ", cadena);
+    //fwrite(&cadena, sizeof(cadena), 1, log);
+
+    // Creacion y comprobacion recive
+    r = recv(clientfd, &buffer, 4, 0);
+    buffer[r] = 0;
+    travelModelShare.destinyId = (short)atoi(&buffer[0]);
+
+    // Creacion y comprobacion send
+    r = send(clientfd, "Dato recibido", 14, 0);
+    if(r < 0){
+        perror("Error en send(): \n");
+        exit(-1);
+    }
+
+    // Creacion y comporbacion recive
+    r = recv(clientfd, &buffer, 2, 0);
+    buffer[r] = 0;
+    travelModelShare.hour = (short)atoi(&buffer[0]);
+
+    //Creacion y comprobacion send
+    r = send(clientfd, "Dato recibido", 14, 0);
+    if(r < 0){
+        perror("Error en send(): \n");
+        exit(-1);
+    }
+    
+    
     int foundValue = 0;
     int newData = 0;
-    /*Declaracion de una estrucura para guardar los datos en esta e ir agregandolo a la table
-    e inicializamos unas variables para detectar el cambio en la memoria compartida*/
-    travel travelModel;
+    
     // short int oldSource = -1,oldDestiny = -1,oldHour = -1;
     short int oldSource = 0,oldDestiny = 0,oldHour = 0;
         //Apertura archivo binario para leer
@@ -50,10 +173,10 @@ int main(){
 
         // El ciclo while espera siempre el cambio de un dato en memoria compartida
         while (1) {
-            if ((shm_ptr->sourceId != oldSource) || (shm_ptr->destinyId != oldDestiny) || (shm_ptr->hour != oldHour)){
+            if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                 foundValue = 0;
             }
-        //Buscar un cambio en la memoria compartida
+        //Buscar un cambio en la estructura travel que comparten o donde capturo los datos
             //printf("Dato memoria: %hd, %hd, %hd\n", shm_ptr->sourceId,shm_ptr->destinyId,shm_ptr->hour);
             //sleep(1);
             //Lectura con apuntadores del archivo binario y guardarlos en la estructura
@@ -71,11 +194,11 @@ int main(){
                 // printf("Data%hd\n",i);
                 // sleep(1);
                 //printf("Dato es: %hd, %hd, %hd, %hd, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, travelModel.siguiente,travelModel.meanTravel);
-                if ((shm_ptr->sourceId != oldSource) || (shm_ptr->destinyId != oldDestiny) || (shm_ptr->hour != oldHour)){
+                if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                     //printf("Ojo dato nuevo\n");
                     i = -1;
                 }
-                if(shm_ptr->sourceId == travelModel.sourceId){
+                if(travelModelShare.sourceId == travelModel.sourceId){
                     //printf("entro");
                     while(foundValue == 0 && travelModel.siguiente > 0){
                         //printf("Se queda");
@@ -86,7 +209,7 @@ int main(){
                         // printf("Dato LEIDO: %hd, %hd, %hd, %hd, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, travelModel.siguiente,travelModel.meanTravel);
                         //printf("Compa Leido vs Memoria: %hd,%hd\n",travelModel.destinyId,shm_ptr->destinyId);
                          //sleep(1);
-                        if ((shm_ptr->sourceId != oldSource) || (shm_ptr->destinyId != oldDestiny) || (shm_ptr->hour != oldHour)){
+                        if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                             // printf("Ojo dato nuevo\n");
                             // sleep(1);
                             fseek(fDataBin, 0, SEEK_SET);
@@ -98,12 +221,16 @@ int main(){
                             i = -1;
                             break;
                         }
-                        if(shm_ptr->destinyId == travelModel.destinyId && shm_ptr->hour == travelModel.hour){
+                        if(travelModelShare.destinyId == travelModel.destinyId && travelModelShare.hour == travelModel.hour){
                             //Se encontro la estructura y se asigna a la memoria compartida el tiempo medio de esa
                             //estructura
                             //printf("aca2: %hd\n",travelModel.siguiente);
-                            shm_ptr->meanTravel = travelModel.meanTravel;
-                            printf("Tiempo medio: %.2f\n",shm_ptr->meanTravel);
+                            r = send(clientfd, &travelModel.meanTravel, sizeof(travelModel.meanTravel), 0);
+                            if(r < 0){
+                                perror("Error en send(): \n");
+                                exit(-1);
+                            }
+                            printf("Tiempo medio: %.2f\n",travelModel.meanTravel);
                             //Poner a dormir 1 segundo para que los procesos no lean al tiempo la memoria compartida
                             sleep(1);
                             foundValue = 1;
@@ -118,7 +245,7 @@ int main(){
                             fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
                             fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
                         }
-                        if ((shm_ptr->sourceId != oldSource) || (shm_ptr->destinyId != oldDestiny) || (shm_ptr->hour != oldHour)){
+                        if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                             newData = 1;
                             i = -1;
                         }
@@ -136,9 +263,9 @@ int main(){
                     // sleep(3);
                 }
             //Actualizar el valor viejo para comprobar cambios en la memoria compartida
-                oldSource = shm_ptr->sourceId;
-                oldDestiny = shm_ptr->destinyId;
-                oldHour = shm_ptr->hour;
+                oldSource = travelModelShare.sourceId;
+                oldDestiny = travelModelShare.destinyId;
+                oldHour = travelModelShare.hour;
             //Poner a dormir 1 segundo para que los procesos no lean al tiempo la memoria compartida
                 // sleep(1);
             //usleep(500 * 1000);
