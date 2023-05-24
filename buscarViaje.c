@@ -60,12 +60,6 @@ int main(){
         printf("Error formateando fecha");
     }
 
-    // Crear el Log
-    FILE *log;
-    
-    char cadena[200];
-    const char *aux;
-
     // Creacion y comprobacion socket server
     serverfd = socket(AF_INET, SOCK_STREAM, 0);
     if(serverfd < 0){
@@ -101,12 +95,6 @@ int main(){
         perror("Error en accept(): \n");
         exit(-1);
     }
-    // Abri el archivo Log.txt
-    log = fopen("Log.txt", "w");
-    if (log == NULL)
-    {
-        printf("Error al crear el log \n");
-    }
     
     // Creacion y comporbacion send
     r = send(clientfd, "Conexion establecida con el servidor", 36, 0);
@@ -127,10 +115,6 @@ int main(){
         perror("Error en send(): \n");
         exit(-1);
     }
-
-    // printf("[%s]", fechaHora);
-    // printf("%s La cadenas es ", cadena);
-    //fwrite(&cadena, sizeof(cadena), 1, log);
 
     // Creacion y comprobacion recive
     r = recv(clientfd, &buffer, 4, 0);
@@ -231,6 +215,62 @@ int main(){
                                 exit(-1);
                             }
                             printf("Tiempo medio: %.2f\n",travelModel.meanTravel);
+                            // Obtener el tiempo actual
+                            time_t t = time(NULL);
+                            struct tm tiempoLocal = *localtime(&t);
+
+                            // Preparacion para dar formato para la fecha y hora
+                            char dataBusqueda[80] = "Fecha: ";
+                            char dataTravel[20];
+                            char fechaHora[70];
+                            char *formato = "%Y-%m-%d %H:%M:%S";
+                            char actTime[70];
+
+                            // Formatear la fecha
+                            int bytesEscritos = strftime(fechaHora, sizeof(fechaHora), formato, &tiempoLocal);
+
+                            // Verificar que se pudo dar formato
+                            if (bytesEscritos != 0) {
+                                //printf("[%s]", fechaHora);
+                                memcpy(actTime, fechaHora, sizeof(fechaHora));
+                                // actTime = fechaHora;
+
+                            } else {
+                                printf("Error formateando fecha");
+                            }
+                            
+                            // Obtener información del socket del cliente
+                            struct sockaddr_in clientAddr;
+                            socklen_t clientAddrLen = sizeof(clientAddr);
+                            int miV = getpeername(clientfd, (struct sockaddr*)&clientAddr, &clientAddrLen);
+
+                            // Convertir la dirección IP a una cadena legible
+                            char clientIP[INET_ADDRSTRLEN];
+                            inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+
+                            //Abrir el archivo Log para escribir en este
+                            FILE* log = fopen("Log.txt", "a"); 
+
+                            if (log == NULL) {
+                                printf("No se pudo abrir el archivo.\n");
+                                return 1;
+                            }
+
+                            strcat(dataBusqueda, fechaHora);
+                            strcat(dataBusqueda, " Cliente: ");
+                            strcat(dataBusqueda, clientIP);
+                            strcat(dataBusqueda, " Busqueda: ");
+                            sprintf(dataTravel,"%d",travelModel.sourceId);
+                            strcat(dataBusqueda, dataTravel);
+                            strcat(dataBusqueda, "-");
+                            sprintf(dataTravel,"%d",travelModel.destinyId);
+                            strcat(dataBusqueda, dataTravel);
+                            strcat(dataBusqueda, "\n");
+                            // Escribir en el archivo log la busqueda
+                            fprintf(log, "%s",dataBusqueda);
+                            // Cerrar el archivo
+                            fclose(log);
+                            // printf("Fecha y hora formateada: %s\n", dataBusqueda);
                             //Poner a dormir 1 segundo para que los procesos no lean al tiempo la memoria compartida
                             sleep(1);
                             foundValue = 1;
