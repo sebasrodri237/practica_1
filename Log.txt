@@ -1,1 +1,19 @@
 
+Fecha: 2023-05-24 18:17:27 Cliente: 127.0.0.1 Busqueda: 1004-950
+Fecha: 2023-05-24 18:23:07 Cliente: 127.0.0.1 Busqueda: 100-445
+Fecha: 2023-05-24 18:30:20 Cliente: 127.0.0.1 Busqueda: 1129-381
+Fecha: 2023-05-24 18:45:00 Cliente: 127.0.0.1 Busqueda: 1007-945
+Fecha: 2023-05-24 18:49:31 Cliente: 127.0.0.1 Busqueda: 130-1102
+Fecha: 2023-05-24 18:52:34 Cliente: 127.0.0.1 Busqueda: 130-1102
+Fecha: 2023-05-24 19:36:25 Cliente: 127.0.0.1 Busqueda: 1004-950
+Fecha: 2023-05-24 19:41:07 Cliente: 127.0.0.1 Busqueda: 418-282
+Fecha: 2023-05-24 20:29:52 Cliente: 127.0.0.1 Busqueda: 1004-950
+Fecha: 2023-05-24 20:31:16 Cliente: 127.0.0.1 Busqueda: 1004-950
+Fecha: 2023-05-24 20:36:41 Cliente: 127.0.0.1 Busqueda: 98-6
+Fecha: 2023-05-24 20:39:21 Cliente: 127.0.0.1 Busqueda: 98-6
+Fecha: 2023-05-24 20:41:38 Cliente: 127.0.0.1 Busqueda: 1083-536
+Fecha: 2023-05-24 20:54:08 Cliente: 127.0.0.1 Busqueda: 780-407
+Fecha: 2023-05-24 21:14:48 Cliente: 127.0.0.1 Busqueda: 98-6
+Fecha: 2023-05-24 21:17:08 Cliente: 127.0.0.1 Busqueda: 1004-299
+Fecha: 2023-05-24 21:22:59 Cliente: 127.0.0.1 Busqueda: 1004-299
+Fecha: 2023-05-24 21:24:56 Cliente: 127.0.0.1 Busqueda: 1051-58

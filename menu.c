@@ -146,11 +146,11 @@ int main()
                     }
                     break;
             case 4: 
-                r = send(clientfd, "Solicitud AVT", 14, 0);
-                if(r < 0){
-                    perror("Error en send(): \n");
-                    exit(-1);
-                }
+                // r = send(clientfd, "Solicitud AVT", 14, 0);
+                // if(r < 0){
+                //     perror("Error en send(): \n");
+                //     exit(-1);
+                // }
 
                  // Creacion y comprobacion recive
                 r = recv(clientfd, &meanTravel, sizeof(meanTravel), 0);

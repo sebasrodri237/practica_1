@@ -17,6 +17,7 @@
 
 int main(){
 
+    short int opc;
     int serverfd, clientfd, r, opt = 1;
     struct sockaddr_in server, client; 
     socklen_t   tamano;
@@ -104,42 +105,41 @@ int main(){
     }
 
     
-    // Creacion y comprobacion recive
-    r = recv(clientfd, &buffer, 4, 0);
-    buffer[r] = 0;
-    travelModelShare.sourceId = (short)atoi(&buffer[0]);
+    // // Creacion y comprobacion recive
+    // r = recv(clientfd, &buffer, 4, 0);
+    // buffer[r] = 0;
+    // travelModelShare.sourceId = (short)atoi(&buffer[0]);
 
-    // Creacion y comprobacion send
-    r = send(clientfd, "Dato recibido", 14, 0);
-    if(r < 0){
-        perror("Error en send(): \n");
-        exit(-1);
-    }
+    // // Creacion y comprobacion send
+    // r = send(clientfd, "Dato recibido", 14, 0);
+    // if(r < 0){
+    //     perror("Error en send(): \n");
+    //     exit(-1);
+    // }
 
-    // Creacion y comprobacion recive
-    r = recv(clientfd, &buffer, 4, 0);
-    buffer[r] = 0;
-    travelModelShare.destinyId = (short)atoi(&buffer[0]);
+    // // Creacion y comprobacion recive
+    // r = recv(clientfd, &buffer, 4, 0);
+    // buffer[r] = 0;
+    // travelModelShare.destinyId = (short)atoi(&buffer[0]);
 
-    // Creacion y comprobacion send
-    r = send(clientfd, "Dato recibido", 14, 0);
-    if(r < 0){
-        perror("Error en send(): \n");
-        exit(-1);
-    }
+    // // Creacion y comprobacion send
+    // r = send(clientfd, "Dato recibido", 14, 0);
+    // if(r < 0){
+    //     perror("Error en send(): \n");
+    //     exit(-1);
+    // }
 
-    // Creacion y comporbacion recive
-    r = recv(clientfd, &buffer, 2, 0);
-    buffer[r] = 0;
-    travelModelShare.hour = (short)atoi(&buffer[0]);
+    // // Creacion y comporbacion recive
+    // r = recv(clientfd, &buffer, 2, 0);
+    // buffer[r] = 0;
+    // travelModelShare.hour = (short)atoi(&buffer[0]);
 
-    //Creacion y comprobacion send
-    r = send(clientfd, "Dato recibido", 14, 0);
-    if(r < 0){
-        perror("Error en send(): \n");
-        exit(-1);
-    }
-    
+    // //Creacion y comprobacion send
+    // r = send(clientfd, "Dato recibido", 14, 0);
+    // if(r < 0){
+    //     perror("Error en send(): \n");
+    //     exit(-1);
+    // }
     
     int foundValue = 0;
     int newData = 0;
@@ -154,11 +154,47 @@ int main(){
 			printf("No se pudo abrir el archivo binario\n");
 			return 1;
 		}
-
+                //98,6,7,3124.57,794.39,3014.25,1.32
         // El ciclo while espera siempre el cambio de un dato en memoria compartida
         while (1) {
             if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                 foundValue = 0;
+            }
+            
+            printf("Viene1\n");
+            // Creacion y comprobacion recive
+            r = recv(clientfd, &buffer, 4, 0);
+            buffer[r] = 0;
+            travelModelShare.sourceId = (short)atoi(&buffer[0]);
+            // Creacion y comprobacion send
+            r = send(clientfd, "Dato recibido", 14, 0);
+            if(r < 0){
+                perror("Error en send(): \n");
+                exit(-1);
+            }
+            printf("Viene2\n");
+            //1051,58,16,2389.58,312.71,2369.15,1.14
+            // Creacion y comprobacion recive
+            r = recv(clientfd, &buffer, 4, 0);
+            buffer[r] = 0;
+            travelModelShare.destinyId = (short)atoi(&buffer[0]);
+            // Creacion y comprobacion send
+            r = send(clientfd, "Dato recibido", 14, 0);
+            if(r < 0){
+                perror("Error en send(): \n");
+                exit(-1);
+            }
+            printf("Viene3\n");
+            // Creacion y comporbacion recive
+            r = recv(clientfd, &buffer, 2, 0);
+            buffer[r] = 0;
+            travelModelShare.hour = (short)atoi(&buffer[0]);
+
+            //Creacion y comprobacion send
+            r = send(clientfd, "Dato recibido", 14, 0);
+            if(r < 0){
+                perror("Error en send(): \n");
+                exit(-1);
             }
         //Buscar un cambio en la estructura travel que comparten o donde capturo los datos
             //printf("Dato memoria: %hd, %hd, %hd\n", shm_ptr->sourceId,shm_ptr->destinyId,shm_ptr->hour);
@@ -172,6 +208,7 @@ int main(){
             fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
             //Ciclo para leer tantas estructuras/lineas del archivo binario como la condición lo diga
             //Mas alla de 250000 la busqueda se realentiza mas de los 2 segundos
+            
             for (int i = 1; i <=250000 && (foundValue == 0 ); i++){
                 newData = 0; 
                 //Comprobar el origen Id
@@ -209,16 +246,13 @@ int main(){
                             //Se encontro la estructura y se asigna a la memoria compartida el tiempo medio de esa
                             //estructura
                             //printf("aca2: %hd\n",travelModel.siguiente);
-                            r = send(clientfd, &travelModel.meanTravel, sizeof(travelModel.meanTravel), 0);
-                            if(r < 0){
-                                perror("Error en send(): \n");
-                                exit(-1);
-                            }
+                            // Creacion y comporbacion recive
+                            
                             printf("Tiempo medio: %.2f\n",travelModel.meanTravel);
                             // Obtener el tiempo actual
                             time_t t = time(NULL);
                             struct tm tiempoLocal = *localtime(&t);
-
+                            //780,407,21,1934.18,463.03,1881.99,1.26
                             // Preparacion para dar formato para la fecha y hora
                             char dataBusqueda[80] = "Fecha: ";
                             char dataTravel[20];
@@ -309,6 +343,18 @@ int main(){
             //Poner a dormir 1 segundo para que los procesos no lean al tiempo la memoria compartida
                 // sleep(1);
             //usleep(500 * 1000);
+            }
+            if(foundValue == 1){
+                printf("Viene4\n");
+                r = recv(clientfd, &buffer, 2, 0);
+                buffer[r] = 0;
+                opc = (short)atoi(&buffer[0]);
+                r = send(clientfd, &travelModel.meanTravel, sizeof(travelModel.meanTravel), 0);
+                if(r < 0){
+                    perror("Error en send(): \n");
+                    exit(-1);
+                }
+                foundValue == 0;
             }
         //printf("La línea 5 es: %hd, %hd, %hd, %.2ld, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, 2*(travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)),travelModel.meanTravel);
         }
