@@ -14,6 +14,9 @@ Fecha: 2023-05-24 20:39:21 Cliente: 127.0.0.1 Busqueda: 98-6
 Fecha: 2023-05-24 20:41:38 Cliente: 127.0.0.1 Busqueda: 1083-536
 Fecha: 2023-05-24 20:54:08 Cliente: 127.0.0.1 Busqueda: 780-407
 Fecha: 2023-05-24 21:14:48 Cliente: 127.0.0.1 Busqueda: 98-6
-Fecha: 2023-05-24 21:17:08 Cliente: 127.0.0.1 Busqueda: 1004-299
-Fecha: 2023-05-24 21:22:59 Cliente: 127.0.0.1 Busqueda: 1004-299
-Fecha: 2023-05-24 21:24:56 Cliente: 127.0.0.1 Busqueda: 1051-58
+
+Fecha: 2023-05-25 12:32:26 Cliente: 127.0.0.1 Busqueda: 361-858
+Fecha: 2023-05-25 12:33:12 Cliente: 127.0.0.1 Busqueda: 1004-950
+Fecha: 2023-05-25 12:33:23 Cliente: 127.0.0.1 Busqueda: 317-542
+Fecha: 2023-05-25 12:33:52 Cliente: 127.0.0.1 Busqueda: 361-858
+Fecha: 2023-05-25 12:34:05 Cliente: 127.0.0.1 Busqueda: 6-193

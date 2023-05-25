@@ -11,12 +11,13 @@
 #include <strings.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #define PORT 3535
 #define BACKLOG 32
 
-int main(){
-
+void *manejoCliente(void *arg){
+    int clientSocket = *((int *)arg);
     short int opc;
     int serverfd, clientfd, r, opt = 1;
     struct sockaddr_in server, client; 
@@ -26,8 +27,14 @@ int main(){
     char buff[1];
     unsigned char buf[sizeof(struct in_addr)];
     char str[INET_ADDRSTRLEN];
-
-    //Estructura para leer los datos del archivo binario
+    // Creacion y comporbacion send
+    clientfd = clientSocket;
+    r = send(clientfd, "Conexion establecida con el servidor", 36, 0);
+    if(r < 0){
+        perror("Error en send(): \n");
+        exit(-1);
+    }
+        //Estructura para leer los datos del archivo binario
     typedef struct {
         short int sourceId,destinyId,hour,siguiente;
         double meanTravel;
@@ -38,73 +45,6 @@ int main(){
 
     //Estructura para guardar los datos recibidos
     travel travelModelShare;
-
-    // Obtener el tiempo actual
-    time_t t = time(NULL);
-    struct tm tiempoLocal = *localtime(&t);
-
-    // Preparacion para dar formato para la fecha y hora
-    char fechaHora[70];
-    char *formato = "%Y-%m-%d %H:%M:%S";
-    char actTime[70];
-
-    // Formatear la fecha
-    int bytesEscritos = strftime(fechaHora, sizeof(fechaHora), formato, &tiempoLocal);
-
-    // Verificar que se pudo dar formato
-    if (bytesEscritos != 0) {
-        //printf("[%s]", fechaHora);
-        memcpy(actTime, fechaHora, sizeof(fechaHora));
-        // actTime = fechaHora;
-
-    } else {
-        printf("Error formateando fecha");
-    }
-
-    // Creacion y comprobacion socket server
-    serverfd = socket(AF_INET, SOCK_STREAM, 0);
-    if(serverfd < 0){
-        perror("Error en socket(): \n");
-        exit(-1);
-    }
-
-    // Configuracion socket
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
-    server.sin_addr.s_addr = INADDR_ANY;
-    bzero(server.sin_zero, 8);
-    
-    setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(int));
-
-    // Creacion y comporbacion bind
-    r = bind(serverfd, (struct sockaddr*)&server, sizeof(struct sockaddr));
-    if(r < 0){
-        perror("Error en bind(): \n");
-        exit(-1);
-    }
-
-    // Creacion y comporbacion listen
-    r = listen(serverfd, BACKLOG);
-    if(r < 0){
-        perror("Error en listen(): \n");
-        exit(-1);
-    }
-
-    // Creacion y comporbacion accept
-    clientfd = accept(serverfd, (struct sockaddr *)&client, &tamano);
-    if(clientfd < 0){
-        perror("Error en accept(): \n");
-        exit(-1);
-    }
-    
-    // Creacion y comporbacion send
-    r = send(clientfd, "Conexion establecida con el servidor", 36, 0);
-    if(r < 0){
-        perror("Error en send(): \n");
-        exit(-1);
-    }
-
-    
     // // Creacion y comprobacion recive
     // r = recv(clientfd, &buffer, 4, 0);
     // buffer[r] = 0;
@@ -148,12 +88,12 @@ int main(){
     short int oldSource = 0,oldDestiny = 0,oldHour = 0;
         //Apertura archivo binario para leer
         FILE *fDataBin;
-		fDataBin=fopen("tablaBinarita.bin","rb");
-		if (!fDataBin)
-		{
-			printf("No se pudo abrir el archivo binario\n");
-			return 1;
-		}
+        fDataBin=fopen("tablaBinarita.bin","rb");
+        if (!fDataBin)
+        {
+            printf("No se pudo abrir el archivo binario\n");
+            exit(EXIT_FAILURE);
+        }
                 //98,6,7,3124.57,794.39,3014.25,1.32
         // El ciclo while espera siempre el cambio de un dato en memoria compartida
         while (1) {
@@ -164,6 +104,9 @@ int main(){
             printf("Viene1\n");
             // Creacion y comprobacion recive
             r = recv(clientfd, &buffer, 4, 0);
+            if(atoi(&buffer[0]) == 0){
+                close(clientfd);
+            }
             buffer[r] = 0;
             travelModelShare.sourceId = (short)atoi(&buffer[0]);
             // Creacion y comprobacion send
@@ -176,6 +119,9 @@ int main(){
             //1051,58,16,2389.58,312.71,2369.15,1.14
             // Creacion y comprobacion recive
             r = recv(clientfd, &buffer, 4, 0);
+            if(atoi(&buffer[0]) == 0){
+                close(clientfd);
+            }
             buffer[r] = 0;
             travelModelShare.destinyId = (short)atoi(&buffer[0]);
             // Creacion y comprobacion send
@@ -187,6 +133,9 @@ int main(){
             printf("Viene3\n");
             // Creacion y comporbacion recive
             r = recv(clientfd, &buffer, 2, 0);
+            if(atoi(&buffer[0]) == 0){
+                close(clientfd);
+            }
             buffer[r] = 0;
             travelModelShare.hour = (short)atoi(&buffer[0]);
 
@@ -229,7 +178,7 @@ int main(){
                         // printf("Dato MEMORIA2: %hd, %hd, %hd, %.2f\n", shm_ptr->sourceId,shm_ptr->destinyId,shm_ptr->hour,shm_ptr->meanTravel);
                         // printf("Dato LEIDO: %hd, %hd, %hd, %hd, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, travelModel.siguiente,travelModel.meanTravel);
                         //printf("Compa Leido vs Memoria: %hd,%hd\n",travelModel.destinyId,shm_ptr->destinyId);
-                         //sleep(1);
+                        //sleep(1);
                         if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                             // printf("Ojo dato nuevo\n");
                             // sleep(1);
@@ -287,7 +236,7 @@ int main(){
 
                             if (log == NULL) {
                                 printf("No se pudo abrir el archivo.\n");
-                                return 1;
+                                exit(EXIT_FAILURE);
                             }
 
                             strcat(dataBusqueda, fechaHora);
@@ -359,5 +308,68 @@ int main(){
         //printf("La línea 5 es: %hd, %hd, %hd, %.2ld, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, 2*(travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)),travelModel.meanTravel);
         }
     fclose(fDataBin);
+    
+}
+
+int main(){
+
+    short int opc;
+    int serverfd, clientfd, r, opt = 1;
+    struct sockaddr_in server, client; 
+    socklen_t   tamano;
+    char buffer[4];
+    char bufferAVT[14];
+    char buff[1];
+    unsigned char buf[sizeof(struct in_addr)];
+    char str[INET_ADDRSTRLEN];
+
+    // Creacion y comprobacion socket server
+    serverfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(serverfd < 0){
+        perror("Error en socket(): \n");
+        exit(-1);
+    }
+
+    // Configuracion socket
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = INADDR_ANY;
+    bzero(server.sin_zero, 8);
+    
+    setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(int));
+
+    // Creacion y comporbacion bind
+    r = bind(serverfd, (struct sockaddr*)&server, sizeof(struct sockaddr));
+    if(r < 0){
+        perror("Error en bind(): \n");
+        exit(-1);
+    }
+
+    // Creacion y comporbacion listen
+    r = listen(serverfd, BACKLOG);
+    if(r < 0){
+        perror("Error en listen(): \n");
+        exit(-1);
+    }
+
+    while(1){
+        // Creacion y comporbacion accept
+        clientfd = accept(serverfd, (struct sockaddr *)&client, &tamano);
+        if(clientfd < 0){
+            perror("Error en accept(): \n");
+            exit(-1);
+        }
+        pthread_t thread;
+        int *clientSocketPtr = malloc(sizeof(int));
+        *clientSocketPtr = clientfd;
+        if (pthread_create(&thread, NULL, manejoCliente, (void *)clientSocketPtr) != 0) {
+            perror("Error al crear el hilo");
+            exit(EXIT_FAILURE);
+        }
+
+    }
+
+    
+    
     return (0);
 }
