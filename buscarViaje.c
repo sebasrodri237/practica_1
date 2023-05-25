@@ -208,13 +208,13 @@ int main(){
             fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
             //Ciclo para leer tantas estructuras/lineas del archivo binario como la condición lo diga
             //Mas alla de 250000 la busqueda se realentiza mas de los 2 segundos
-            
+            //printf("%hd\n",foundValue);
             for (int i = 1; i <=250000 && (foundValue == 0 ); i++){
                 newData = 0; 
                 //Comprobar el origen Id
-                // printf("Data%hd\n",i);
+                //printf("Data%hd\n",i);
                 // sleep(1);
-                //printf("Dato es: %hd, %hd, %hd, %hd, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, travelModel.siguiente,travelModel.meanTravel);
+                //printf("Dato es: %hd, %hd, %hd\n", travelModelShare.sourceId, travelModelShare.destinyId, travelModelShare.hour);
                 if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                     //printf("Ojo dato nuevo\n");
                     i = -1;
@@ -354,7 +354,7 @@ int main(){
                     perror("Error en send(): \n");
                     exit(-1);
                 }
-                foundValue == 0;
+                foundValue = 0;
             }
         //printf("La línea 5 es: %hd, %hd, %hd, %.2ld, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, 2*(travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)),travelModel.meanTravel);
         }
