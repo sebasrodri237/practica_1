@@ -16,9 +16,10 @@
 #define SERVER_ADDRESS  "127.0.0.1"
 /* En este punto se debe realizar la comunicacion con la busqueda. Sea con tuberias o con memoria compartida */
 typedef struct {
-    short int sourceId,destinyId,hour,siguiente;
+    short int sourceId,destinyId,hour;
+    long int siguiente;
     double meanTravel;
-    } travel;
+} travel;
 
 int main()
 {   
@@ -53,7 +54,7 @@ int main()
     if(r < 0){
         perror("Error al configurar el socket (bind)");
         exit(-1);
-    }    
+    }    //871,712,0,1273.88,405
 
     // Creacion y comporbacion recive
     r = recv(clientfd, buffer, 36, 0);

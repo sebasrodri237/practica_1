@@ -35,16 +35,17 @@ void *manejoCliente(void *arg){
         exit(-1);
     }
         //Estructura para leer los datos del archivo binario
-    typedef struct {
-        short int sourceId,destinyId,hour,siguiente;
-        double meanTravel;
-    } travel;
+    struct travel {
+    short int sourceId, destinyId, hour;
+    double meanTravel;
+    long int siguiente;
+    };
     
     //Estructura para manejar la busqueda
-    travel travelModel;
+    struct travel travelModel;
 
     //Estructura para guardar los datos recibidos
-    travel travelModelShare;
+    struct travel travelModelShare;
     // // Creacion y comprobacion recive
     // r = recv(clientfd, &buffer, 4, 0);
     // buffer[r] = 0;
@@ -88,7 +89,7 @@ void *manejoCliente(void *arg){
     short int oldSource = 0,oldDestiny = 0,oldHour = 0;
         //Apertura archivo binario para leer
         FILE *fDataBin;
-        fDataBin=fopen("tablaBinarita.bin","rb");
+        fDataBin=fopen("tablaEnlazadaViajes.bin","rb");
         if (!fDataBin)
         {
             printf("No se pudo abrir el archivo binario\n");
@@ -134,11 +135,11 @@ void *manejoCliente(void *arg){
             // Creacion y comporbacion recive
             r = recv(clientfd, &buffer, 2, 0);
             if(atoi(&buffer[0]) == 0){
+                printf("No llega\n");
                 close(clientfd);
             }
             buffer[r] = 0;
             travelModelShare.hour = (short)atoi(&buffer[0]);
-
             //Creacion y comprobacion send
             r = send(clientfd, "Dato recibido", 14, 0);
             if(r < 0){
@@ -150,15 +151,12 @@ void *manejoCliente(void *arg){
             //sleep(1);
             //Lectura con apuntadores del archivo binario y guardarlos en la estructura
             fseek(fDataBin, 0, SEEK_SET);
-            fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
-            fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
-            fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
-            fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
-            fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+            fread(&travelModel, sizeof(struct travel), 1, fDataBin);
+
             //Ciclo para leer tantas estructuras/lineas del archivo binario como la condición lo diga
             //Mas alla de 250000 la busqueda se realentiza mas de los 2 segundos
-            //printf("%hd\n",foundValue);
-            for (int i = 1; i <=250000 && (foundValue == 0 ); i++){
+            //printf("Dato es: %hd, %hd, %hd\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour);
+            for (int i = 1; i <=1000000 && (foundValue == 0 ); i++){
                 newData = 0; 
                 //Comprobar el origen Id
                 //printf("Data%hd\n",i);
@@ -167,7 +165,7 @@ void *manejoCliente(void *arg){
                 if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                     //printf("Ojo dato nuevo\n");
                     i = -1;
-                }
+                }//662,706,5,1313.91,8000009
                 if(travelModelShare.sourceId == travelModel.sourceId){
                     //printf("entro");
                     while(foundValue == 0 && travelModel.siguiente > 0){
@@ -176,21 +174,17 @@ void *manejoCliente(void *arg){
                         //printf("foundValue: %hd",foundValue);
                         //printf("siguiente: %hd\n",travelModel.siguiente);
                         // printf("Dato MEMORIA2: %hd, %hd, %hd, %.2f\n", shm_ptr->sourceId,shm_ptr->destinyId,shm_ptr->hour,shm_ptr->meanTravel);
-                        // printf("Dato LEIDO: %hd, %hd, %hd, %hd, %.2f\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour, travelModel.siguiente,travelModel.meanTravel);
+                        //printf("Dato LEIDO: %hd, %hd, %hd,%.2f ,%ld\n", travelModel.sourceId, travelModel.destinyId, travelModel.hour,travelModel.meanTravel,travelModel.siguiente);
                         //printf("Compa Leido vs Memoria: %hd,%hd\n",travelModel.destinyId,shm_ptr->destinyId);
                         //sleep(1);
                         if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                             // printf("Ojo dato nuevo\n");
                             // sleep(1);
                             fseek(fDataBin, 0, SEEK_SET);
-                            fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+                            fread(&travelModel, sizeof(struct travel), 1, fDataBin);
                             i = -1;
                             break;
-                        }
+                        }//450,1065,13,2478.11,1203
                         if(travelModelShare.destinyId == travelModel.destinyId && travelModelShare.hour == travelModel.hour){
                             //Se encontro la estructura y se asigna a la memoria compartida el tiempo medio de esa
                             //estructura
@@ -261,12 +255,8 @@ void *manejoCliente(void *arg){
                         }
                         else{
                             //Busca el siguiente valor igual al origen Id y sigue comprobando destino Id y hora
-                            fseek(fDataBin, (travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
-                            fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
-                            fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+                            fseek(fDataBin, (travelModel.siguiente-1)*(sizeof(struct travel)), SEEK_SET);
+                            fread(&travelModel, sizeof(struct travel), 1, fDataBin);
                         }
                         if ((travelModelShare.sourceId != oldSource) || (travelModelShare.destinyId != oldDestiny) || (travelModelShare.hour != oldHour)){
                             newData = 1;
@@ -276,12 +266,14 @@ void *manejoCliente(void *arg){
                 }
                 //Buscar en la siguiente linea/estructura el destino Id
                 else{
-                    fseek(fDataBin, i*(4*sizeof(short int) + sizeof(double)), SEEK_SET);
+                    fseek(fDataBin, i*(3*sizeof(short int)+ sizeof(double)+sizeof(long int)), SEEK_SET);
                     fread(&travelModel.sourceId, sizeof(short int), 1, fDataBin);
                     fread(&travelModel.destinyId, sizeof(short int), 1, fDataBin);
                     fread(&travelModel.hour, sizeof(short int), 1, fDataBin);
-                    fread(&travelModel.siguiente, sizeof(short int), 1, fDataBin);
                     fread(&travelModel.meanTravel, sizeof(double), 1, fDataBin);
+                    fread(&travelModel.siguiente, sizeof(long int), 1, fDataBin);
+                    fseek(fDataBin, i*(sizeof(struct travel)), SEEK_SET);
+                    fread(&travelModel, sizeof(struct travel), 1, fDataBin);
                     // printf("aca: %li\n",(travelModel.siguiente-1)*(4*sizeof(short int) + sizeof(double)));
                     // sleep(3);
                 }
