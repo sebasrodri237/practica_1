@@ -30,3 +30,6 @@ Fecha: 2023-05-27 21:34:27 Cliente: 127.0.0.1 Busqueda: 662-706
 Fecha: 2023-05-27 21:35:30 Cliente: 127.0.0.1 Busqueda: 1110-371
 Fecha: 2023-05-27 21:39:48 Cliente: 127.0.0.1 Busqueda: 512-696
 Fecha: 2023-05-27 21:43:08 Cliente: 127.0.0.1 Busqueda: 414-974
+Fecha: 2023-05-30 10:28:47 Cliente: 127.0.0.1 Busqueda: 414-974
+Fecha: 2023-05-30 10:29:17 Cliente: 127.0.0.1 Busqueda: 530-630
+Fecha: 2023-05-30 10:29:45 Cliente: 127.0.0.1 Busqueda: 381-147
